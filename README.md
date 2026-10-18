@@ -1,7 +1,5 @@
 # MyBabyBoy
 
-
-
 ## ABOUT
 
 My son simulator to study Functional Domain Modeling and Haskell.
@@ -19,7 +17,6 @@ direnv allow
 ```
 
 ### run locally
-
 
 ```shell
 cabal run myapp -- -n Taro
