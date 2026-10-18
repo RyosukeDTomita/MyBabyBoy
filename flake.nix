@@ -7,6 +7,8 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     treefmt-nix.url = "github:numtide/treefmt-nix";
+    # nixpkgs に無い開発ツール。tricorder 側のビルド前提を崩さないよう follows は付けない。
+    tricorder.url = "github:tweag/tricorder";
   };
 
   outputs =
@@ -16,14 +18,25 @@
       nixpkgs-unstable,
       flake-utils,
       treefmt-nix,
+      tricorder,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = import nixpkgs { inherit system; };
         unstablePkgs = import nixpkgs-unstable { inherit system; };
+        # nixpkgs の Haskell パッケージを差し替える。動的ビルドと静的ビルドの両方で使う。
+        haskellOverrides = hself: _hsuper: {
+          # nixpkgs の 0.4.2 は mtl 2.3 でビルドできず broken 扱い。
+          # nixpkgs の Hackage スナップショットに 0.4.3 が無いため、Hackage から直接取得する。
+          optparse-declarative = hself.callHackageDirect {
+            pkg = "optparse-declarative";
+            ver = "0.4.3";
+            sha256 = "sha256-bS0bPyIKSLS+D5RmPd0bNs6aTv2GhXZhVC/1mwqm68o=";
+          } { };
+        };
         # GHC のバージョンはここで一元管理する(treefmt.nix の ormolu も合わせること)。
-        hpkgs = pkgs.haskell.packages.ghc9122;
+        hpkgs = pkgs.haskell.packages.ghc9122.override { overrides = haskellOverrides; };
         # treefmt.nix から unstablePkgs(pinact / ghalint)を参照できるようにする。
         treefmtEval = treefmt-nix.lib.evalModule pkgs {
           imports = [ ./treefmt.nix ];
@@ -63,7 +76,10 @@
 
         # musl静的バイナリ
         packages.static = pkgs.haskell.lib.justStaticExecutables (
-          pkgs.pkgsStatic.haskell.packages.ghc9122.callCabal2nix "myapp" projectSrc { }
+          (pkgs.pkgsStatic.haskell.packages.ghc9122.override { overrides = haskellOverrides; }).callCabal2nix
+            "myapp"
+            projectSrc
+            { }
         );
 
         # cabalはHackageではなく、nixからパッケージを取得する
@@ -74,6 +90,7 @@
             pkgs.zsh
             hpkgs.haskell-language-server
             pkgs.cabal-install
+            tricorder.packages.${system}.tricorder
             # GitHub Actions のメンテ用ツール(配布物には含まれない)。
             unstablePkgs.pinact
             unstablePkgs.ghalint

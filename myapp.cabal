@@ -11,7 +11,7 @@ common warnings
 
 library
     import:           warnings
-    exposed-modules:  MyApp
+    exposed-modules:  Month0
     hs-source-dirs:   src
     build-depends:    base
                     , text
@@ -23,6 +23,7 @@ executable myapp
     hs-source-dirs:   app
     build-depends:    base
                     , myapp
+                    , optparse-declarative
                     , text
     default-language: GHC2021
 

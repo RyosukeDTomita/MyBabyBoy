@@ -1,10 +1,10 @@
-# template-repository-haskell <!--fix-me-->
+# MyBabyBoy
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 
 ## ABOUT
 
-Nix flake ベースの Haskell プロジェクトテンプレート。
+My son simulator to study Functional Domain Modeling and Haskell.
 
 ---
 
@@ -20,32 +20,23 @@ direnv allow
 
 ### run locally
 
+
 ```shell
-runghc -isrc -iapp app/Main.hs Haskell
+cabal run myapp -- -n Taro
 ```
 
 ```shell
-cabal run myapp
+runghc -isrc -iapp app/Main.hs -n Taro
 ```
 
-```shell
-# 引数を渡したい場合
-cabal run myapp -- <ARG>
-```
+---
+
+## For Developer
 
 ### test
 
 ```shell
 runghc -isrc test/Spec.hs
-```
-
-### build
-
-```shell
-# nix store に動的リンクしたバイナリ
-nix build
-# musl 静的バイナリは初回はソースビルドになり遅いが、Nixユーザ以外に配れるバイナリを作れる。
-nix build .#static
 ```
 
 ### formatter
@@ -56,7 +47,6 @@ nix build .#static
   - mdformat
   - ghalint
   - pinact
-
 
 > [!NOTE]
 > pinactはGitHub APIを使うため、ネットワークの無い`nix flake check`ではpinactを除外している。
@@ -75,6 +65,19 @@ nix flake check
 - パッケージはnixpkgs経由で取得し、Hackageからは取得しない。
   - `cabal.project`にもHackageを参照させないように設定済み
 - .ghciでデフォルトでimportするライブラリは`/sync-ghci`SKILLSで行う。
+- 開発ツール(HLS、tricorderなど)は`.cabal`に書かず、`flake.nix`のdevShellの`nativeBuildInputs`に足す。
+- 方針の詳細は[ADR 0001](docs/adr/0001-dependency-management-with-nix.md)を参照。
+
+### tricorder
+
+ビルド状態・診断・テスト結果をデーモンで常時更新するツール。devShellに含まれている。
+
+```shell
+# TUIで表示する
+tricorder ui
+# 現在のビルド状態を表示する
+tricorder status
+```
 
 ### GHC のバージョンを上げる
 

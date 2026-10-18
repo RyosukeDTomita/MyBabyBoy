@@ -1,17 +1,22 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wunused-imports #-}
 
-import MyApp (greet)
+import Month0 hiding (describe)
+import Month0 qualified
 import Test.Hspec
+
+baby :: Baby
+baby = (newBaby "Taro") {diaper = Wet}
 
 main :: IO ()
 main = hspec $ do
-  describe "greet" $ do
-    it "greets the given name" $
-      greet "Haskell" `shouldBe` "Hello, Haskell!"
+  describe "cry" $ do
+    it "泣いている状態になる" $
+      behavior (cry baby) `shouldBe` Crying
 
-    it "strips surrounding whitespace" $
-      greet "  Haskell  " `shouldBe` "Hello, Haskell!"
+  describe "changeDiaper" $ do
+    it "おむつがきれいになる" $
+      diaper (changeDiaper baby) `shouldBe` Clean
 
-    it "falls back to World for a blank name" $
-      greet "   " `shouldBe` "Hello, World!"
+  describe "describe" $ do
+    it "泣いているときの文章" $
+      Month0.describe (cry baby) `shouldBe` "Taro is crying!(T_T)"

@@ -2,14 +2,17 @@
 :set -isrc
 :set -XOverloadedStrings
 
--- src/MyApp.hs を読み込んでエクスポート関数をスコープに入れる。
+-- src/Month0.hs を読み込んでエクスポート関数をスコープに入れる。
 -- (未ロードの home モジュールは import だけでは入らないため :add を使う)
-:add MyApp
+:add Month0
+-- :add は *Month0 をスコープに入れ Test.Hspec の describe と衝突するため外し、
+-- test/Spec.hs と同じく下の import(hiding / qualified)経由で見せる。
+:module - *Month0
 
 -- このプロジェクト(src/app/test)で実際に使うモジュールだけを import する。
 -- (.ghci は ImportQualifiedPost を有効にしていないため qualified は前置形で書く)
-import Data.Text (Text)
-import qualified Data.Text as Text
-import qualified Data.Text.IO as TextIO
-import System.Environment (getArgs)
+import Control.Monad.IO.Class (liftIO)
+import Month0 hiding (describe)
+import qualified Month0
+import Options.Declarative
 import Test.Hspec
