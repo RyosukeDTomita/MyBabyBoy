@@ -1,10 +1,12 @@
 name: Scorecard supply-chain security
 on:
-  # Only the default branch is supported.
+  # Results are published only from the default branch; PR runs are for checking the analysis.
   branch_protection_rule:
   schedule:
     - cron: '0 2 * * 0'  # Weekly on Sundays
   push:
+    branches: ["main"]
+  pull_request:
     branches: ["main"]
 
 # Declare default permissions as read only.
@@ -28,7 +30,7 @@ jobs:
           persist-credentials: false
 
       - name: "Run analysis"
-        uses: ossf/scorecard-action@62b2cac7ed8198b15735ed49ab1e5cf35480ba46 # v2.4.0
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
         with:
           results_file: results.sarif
           results_format: sarif
@@ -45,7 +47,8 @@ jobs:
           # For private repositories:
           #   - `publish_results` will always be set to `false`, regardless
           #     of the value entered here.
-          publish_results: true
+          # Publishing is only allowed from the default branch, so skip it on PRs.
+          publish_results: ${{ github.event_name != 'pull_request' }}
 
       # Upload the results as artifacts (optional). Commenting out will disable uploads of run results in SARIF
       # format to the repository Actions tab.
